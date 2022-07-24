@@ -1,0 +1,10 @@
+index,entry_id,prev_key,next_key,location,next_location,prev_location,start_date,end_date,PID
+0,1,0,2,main_activity,CareWell,application_closed,1614627806630,1614627806630,FT-01
+1,2,1,3,CareWell,application_closed,main_activity,1614627806630,1614627806727,FT-01
+2,3,2,4,application_closed,main_activity,CareWell,1614627806727,1614627806736,FT-01
+3,4,3,5,main_activity,application_closed,application_closed,1614627806736,1614627807397,FT-01
+4,5,4,6,application_closed,Dashboard,main_activity,1614627807397,1614628073518,FT-01
+5,6,5,7,Dashboard,Education,application_closed,1614628073518,1614628134596,FT-01
+6,7,6,8,Education,Education_https://sites.google.com/view/carewell/home,Dashboard,1614628134596,1614628137297,FT-01
+7,8,7,9,Education_https://sites.google.com/view/carewell/home,Education_https://sites.google.com/view/carewell/caregiving,Education,1614628137297,1614628163100,FT-01
+8,9,8,10,Education_https://sites.google.com/view/carewell/caregiving,Managing Care,Education_https://sites.google.com/view/carewell/home,1614628163100,1614628187850,FT-01

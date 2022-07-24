@@ -1,0 +1,315 @@
+  
+  Future<void> _showList() async {
+    final driveApi = await _getDriveApi();
+    if (driveApi == null) {
+      return;
+    }
+    final fileList = await driveApi.files.list(
+      spaces: 'drive',
+      $fields: 'files(id, name, modifiedTime)',
+    );
+    final files = fileList.files;
+    if (files == null) {
+      return null;
+    }
+
+    final alert = AlertDialog(
+      title: Text("Item List"),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: files.map((e) => Text(e.name ?? "no-name")).toList(),
+        ),
+      ),
+    );
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) => alert,
+    );
+  }
+  /*
+    List mycsvfile = [];
+
+    for (int i = 0; i < uniquePID.length; i++) {
+      mycsvfile.add(
+        "${uniquePID[i]}: ${totalTimeSpentList[i]}",
+      );
+    }
+    print('The final list is : $mycsvfile');
+*/
+  Future<void> _uploadToHidden() async {
+    try {
+      final driveApi = await _getDriveApi();
+      if (driveApi == null) {
+        return;
+      }
+      // Not allow a user to do something else
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: false,
+        transitionDuration: Duration(seconds: 2),
+        barrierColor: Colors.black.withOpacity(0.5),
+        pageBuilder: (context, animation, secondaryAnimation) => Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+      // Create data here instead of loading a file
+      const contents = "This is a sample file";
+      final Stream<List<int>> mediaStream =
+          Future.value(contents.codeUnits).asStream().asBroadcastStream();
+      var media = new drive.Media(mediaStream, contents.length);
+
+      // Set up File info
+      var driveFile = new drive.File();
+      final timestamp = DateFormat("yyyy-MM-dd-hhmmss").format(DateTime.now());
+      driveFile.name = "sample file-$timestamp.txt";
+      driveFile.modifiedTime = DateTime.now().toUtc();
+      driveFile.parents = ["appDataFolder"];
+
+      // Upload
+      final response =
+          await driveApi.files.create(driveFile, uploadMedia: media);
+      print("response: $response");
+
+      // simulate a slow process
+      await Future.delayed(Duration(seconds: 2));
+    } finally {
+      // Remove a dialog
+      Navigator.pop(context);
+    }
+  }
+
+    // print('Time Spent List is: ');
+    // print(timeSpentList);
+
+    // List<String> countryList = PID.map((e) => e.toString()).toList();
+    // List<String> countryList = PID;
+
+   /*
+    List DupCountry = [];
+    country.forEach((dup) {
+      if (DupCountry.contains(dup)) {
+        print("Duplicate in List= ${dup}");
+        
+      } else {
+        DupCountry.add(dup);
+      }
+    });
+    print(country);
+    var isrepeating = false;
+
+    if (DupCountry == null) {
+      isrepeating = false;
+      print('$isrepeating, the country isnt repeating');
+    } else {
+      isrepeating = true;
+      print('$isrepeating, the country is repeating.');
+    }
+
+    if (isrepeating = true) {
+    } else {}
+    */
+
+ /*
+    List<String> countryList = [
+      "Nepal",
+      "Nepal",
+      "USA",
+      "Canada",
+      "Canada",
+      "China",
+      "Russia",
+    ];
+    print("ok1");
+    List<int> number = timeSpentList.map((s) => s as int).toList();
+    print("ok2");
+    print('the numbers is : $number');
+    print("ok3");
+    List<String> uniqueCountry = [];
+    List<int> totalValueList = [];
+
+    for (int i = 0; i < countryList.length; i++) {
+      print('------------------iteration: ${i}-------------------');
+      String country = countryList[i];
+      print('country is: ${country}');
+      if (uniqueCountry.contains(country)) {
+        int index = uniqueCountry.indexOf(country, 0);
+        print('value of index is: ${index}');
+        print("Duplicate in List= ${country}");
+        // add the value to the prvious value;
+        print('initial value is: ${totalValueList[index]}');
+        print('current value is: ${number[i]}');
+        int totalValue = totalValueList[index] + number[i];
+        print('total  value is: ${totalValue}');
+        totalValueList[index] = totalValue;
+      } else {
+        print("Duplicate is NOT in the List= ${country}");
+        // create anew country in uniqueCountry List;
+        uniqueCountry.add(country);
+        print('current value is: ${number[i]}');
+        totalValueList.add(number[i]);
+      }
+    } // end of FOR loop
+*/
+
+ 
+ 
+ 
+    /*
+    final timestamp1 = 1627510285; // timestamp in seconds
+    final DateTime date1 =
+        DateTime.fromMillisecondsSinceEpoch(timestamp1 * 1000);
+    print(date1);
+
+    final timestamp2 = 1628528400;
+    final DateTime date2 =
+        DateTime.fromMillisecondsSinceEpoch(timestamp2 * 1000);
+    print(date2);
+
+    final timeSpent = date2.difference(date1);
+    print(timeSpent);
+    */
+
+
+/*
+    List mycsvfile = [];
+
+    for (int i = 0; i <= _data.length; i++) {
+      mycsvfile.add(
+        "${location[i]}, ${ST[i]}, ${ED[i]}, ${PID[i]}\r\n",
+      );
+    }
+    print("OK6");
+    print(mycsvfile);
+
+    print("OK4");
+*/
+/*
+    for (int i = 1; i < _data.length; i++) {
+      location.add(_data[i][4]);
+      ST.add(_data[i][7]);
+      ED.add(_data[i][8]);
+      PID.add(_data[i][9]);
+
+      mycsvfile.writeAsStringSync(
+          "${location[i]}, ${ST[i]}, ${ED[i]}, ${PID[i]}\r\n",
+          mode: Append);
+    }
+*/
+/*
+
+
+final location = _data[0][4];
+      print(location);
+      final PID = _data[0][9];
+      print(PID);
+      final ST_time = _data[0][7];
+      print(ST_time);
+      final END_time = _data[0][8];
+      print(END_time);
+
+void createCSV(File mycsvfile) {
+  List location = 
+  List PID = 
+  List ST_time = 
+  List END_time = 
+  
+for (int i = 0; i++;) {
+mycsvfile.writeAsStringSync(
+  "${location[i]}, ${PID[i]}, ${ST_time[i]}, ${END_time[i]}\r\n",
+  mode: APPEND);
+}
+}
+
+}
+*/
+  }
+/*
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Kindacode.com"),
+      ),
+      // Display the contents from the CSV file
+      body: ListView.builder(
+        itemCount: _data.length,
+        itemBuilder: (_, index) {
+          return Card(
+            margin: const EdgeInsets.all(3),
+            color: index == 0 ? Colors.amber : Colors.white,
+            child: ListTile(
+              leading: Text(_data[index][0].toString()),
+              title: Text(_data[index][1]),
+              trailing: Text(_data[index][2].toString()),
+            ),
+          );
+        },
+      ),
+
+    );
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Kindacode.com"),
+      ),
+      // Display the contents from the CSV file
+      body: ListView.builder(
+        itemCount: _data.length,
+        itemBuilder: (_, index) {
+          return Card(
+            margin: const EdgeInsets.all(3),
+            color: index == 0 ? Colors.amber : Colors.white,
+            child: ListTile(
+              leading: Text(_data[index][0].toString()),
+              title: Text(_data[index][1]),
+              trailing: Text(_data[index][2].toString()),
+            ),
+          );
+        },
+      ),
+
+      floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.add), onPressed: _loadCSV),
+    );
+  }
+  /*
+    List<List> csvToList(File mycsvFile) {
+      print("OK1");
+      print(mycsvFile.toString());
+      csv1.CsvToListConverter c =
+          new csv1.CsvToListConverter(eol: "\r\n", fieldDelimiter: ",");
+      print("OK2");
+      List<List> listCreated = c.convert(mycsvFile.readAsStringSync());
+      print("OK3");
+      return listCreated;
+      print("OK4");
+    }
+
+    print("OK0");
+    File mycsvFile = new File("Usage_data.csv");
+    List<List<dynamic>> csv = csvToList(mycsvFile);
+    print(csv);
+*/
+  /*
+    List<List> csvToList(File mycsvFile) {
+      print("OK1");
+      print(mycsvFile.toString());
+      csv1.CsvToListConverter c =
+          new csv1.CsvToListConverter(eol: "\r\n", fieldDelimiter: ",");
+      print("OK2");
+      List<List> listCreated = c.convert(mycsvFile.readAsStringSync());
+      print("OK3");
+      return listCreated;
+      print("OK4");
+    }
+
+    print("OK0");
+    File mycsvFile = new File("Usage_data.csv");
+    List<List<dynamic>> csv = csvToList(mycsvFile);
+    print(csv);
+*/
