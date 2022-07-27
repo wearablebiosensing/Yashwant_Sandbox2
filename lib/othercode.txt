@@ -1,4 +1,24 @@
-  
+  else if (snapshot.hasError) {
+              children = <Widget>[
+                const Icon(
+                  Icons.error_outline,
+                  color: Colors.red,
+                  size: 60,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text('Error: ${snapshot.error}'),
+                )
+              ];
+            }
+              /*Future<Map<double, double>> callAsyncFetch() =>
+      Future<Map<double, double>>.delayed(
+        const Duration(seconds: 5),
+        () => data5,
+      );
+*/
+
+            
   Future<void> _showList() async {
     final driveApi = await _getDriveApi();
     if (driveApi == null) {

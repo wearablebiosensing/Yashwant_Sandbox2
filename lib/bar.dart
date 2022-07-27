@@ -1,4 +1,4 @@
-// ignore_for_file: override_on_non_overriding_member, unused_field, non_constant_identifier_names
+// ignore_for_file: override_on_non_overriding_member, unused_field, non_constant_identifier_names, prefer_typing_uninitialized_variables, avoid_print
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +35,24 @@ const _credentials = r'''
 */
 const _spreadsheetId = '1Hhnj4S0yARiFfqvSyGQkkETsWVjxknQldxOW2qts1V4';
 
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Bar Graph',
+      home: FlBarChartExample(),
+    );
+  }
+}
+
 class FlBarChartExample extends StatefulWidget {
   const FlBarChartExample({Key? key}) : super(key: key);
 
@@ -43,21 +61,48 @@ class FlBarChartExample extends StatefulWidget {
 }
 
 class _FlBarChartExampleState extends State<FlBarChartExample> {
-  var data5;
+  late Future<Map<double, double>> data5;
+  String? _btn2SelectedVal;
+  var data6 = <double, double>{};
 
-  ///final data5 = <double, double>{};
+  var data;
+  @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.endOfFrame.then(
+    /* WidgetsBinding.instance.endOfFrame.then(
       (_) {
         if (mounted) {
-          data5 = _loadCSV2();
+          data = _loadCSV2();
         }
       },
-    );
+    );*/
   }
 
+  static const menuItems = <String>[
+    'FT-01',
+    'FT-02',
+    'FT-04',
+    'FT-07',
+    'FT-11',
+    'FT-12',
+    'FT-14',
+    'FT-16',
+    'FT-20',
+    'FT-24',
+    'FT-25',
+    'FT-26',
+    'FT-28',
+    'FT-29'
+  ];
+
+  final List<DropdownMenuItem<String>> _dropDownMenuItems = menuItems
+      .map(
+        (String value) => DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        ),
+      )
+      .toList();
   @override
   final _data1 = <double, double>{1: 9, 2: 12, 3: 10, 4: 20, 5: 14, 6: 18};
   final data3 = <double, double>{
@@ -71,6 +116,8 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
     8: 0
   };
   final eachPatientData_array = <double, double>{};
+
+  bool isLoading = true;
 
   @override
   Future<Map<double, double>> _loadCSV2() async {
@@ -104,7 +151,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
         uniqueLocation.add(location1);
       }
     }
-    print(uniqueLocation);
+    //print(uniqueLocation);
 
     // for all patients, calculate the time spent on each location.
     List<Duration> timeSpentList = [];
@@ -179,8 +226,13 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
     //final _data1 = <double, double>{1: 9, 2: 12, 3: 10, 4: 20, 5: 14, 6: 18};
     List eachPatientData = [];
 
+    print(' &&&&&&&&&&&& _btn2SelectedVal: $_btn2SelectedVal &&&&&&&&&&&&');
+    print(
+        ' &&&&&&&&&&&& finalPatientData.length: $finalPatientData.length &&&&&&&&&&&&');
+
     for (int i = 0; i < finalPatientData.length; i++) {
-      if (finalPatientData[i][0] == 'FT-01') {
+      if (finalPatientData[i][0] == _btn2SelectedVal) {
+        print('Inside the ');
         String location = finalPatientData[i][1];
         String timeSpentStr = finalPatientData[i][2];
 
@@ -205,10 +257,14 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
         // Convert the Duration into milli seconds.
         double timeSpent = (timeSpentDuration.inMinutes).toDouble();
 
+        // limit the timeSpent value
+        if (timeSpent > 50) {
+          print('++++++++++++ timeSpent: $timeSpent ++++++++++++');
+          timeSpent = 50;
+        }
+
         // build the list for bar graph display purpose.
         eachPatientData.add('$location: $timeSpent');
-        print(
-            '----------------------------eachPatientData: $eachPatientData------------------------------------------');
 
         // get the location code from location description.
         double locationCode = -1.00;
@@ -222,28 +278,37 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
         // convert the list into an array to display bar graph purpose
         var record = <double, double>{locationCode: timeSpent};
         eachPatientData_array.addEntries(record.entries);
-        print('eachPatientData_array: $eachPatientData_array');
       }
     } // end of FOR loop
+    print(
+        '----------------------------eachPatientData: $eachPatientData------------------------------------------');
 
+    print('eachPatientData_array: $eachPatientData_array');
+    print(_btn2SelectedVal);
+    setState(() {
+      data6.addAll(eachPatientData_array);
+      isLoading = false;
+    });
     return eachPatientData_array;
   }
 
-  Future<Map<double, double>> callAsyncFetch() =>
-      Future<Map<double, double>>.delayed(
-        const Duration(seconds: 5),
-        () => data5,
-      );
-
-  bool _showBorder = false;
-  bool _showGrid = false;
+  bool _showBorder = true;
+  bool _showGrid = true;
 
   @override
   Widget build(BuildContext context) {
     print("Widget build");
-    print(data5);
+
+    for (var entry in _data1.entries) {
+      print("entry key : ${entry.key.toInt()}");
+      print("entry key runtimetype : ${entry.key.toInt().runtimeType}");
+
+      print("entry value : ${entry.value}");
+      print("entry value runtimetype : ${entry.value.runtimeType}");
+    }
+
     final barGroups = <BarChartGroupData>[
-      for (var entry in data3.entries)
+      for (var entry in _data1.entries)
         BarChartGroupData(
           x: entry.key.toInt(),
           barRods: [
@@ -253,7 +318,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
     ];
 
     final barChartData = BarChartData(
-      maxY: 25,
+      maxY: 50,
       barGroups: barGroups,
       barTouchData: BarTouchData(
         enabled: true,
@@ -269,8 +334,8 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
           axisNameWidget: Text('Screens'),
           sideTitles: SideTitles(
             showTitles: true,
-            /*getTitlesWidget: (double val, _) =>
-                Text(DateFormat.MMM().format(DateTime(2020, val.toInt()))),*/
+            getTitlesWidget: (double val, _) =>
+                Text(DateFormat.MMM().format(DateTime(2020, val.toInt()))),
           ),
         ),
         leftTitles: AxisTitles(
@@ -278,7 +343,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: (double val, _) {
-              if (val.toInt() % 1 != 0) return Text('');
+              if (val.toInt() % 5 != 0) return Text('');
               return Text('${val.toInt()}');
             },
           ),
@@ -288,74 +353,51 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Bar Graph"),
+        title: const Text("Patient Insights"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(0),
-        child: FutureBuilder<Map>(
-          future: callAsyncFetch(),
-          builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
-            List<Widget> children;
-            if (snapshot.hasData) {
-              children = <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(0),
-                  child: BarChart(barChartData),
-                ),
-              ];
-            } else if (snapshot.hasError) {
-              children = <Widget>[
-                const Icon(
-                  Icons.error_outline,
-                  color: Colors.red,
-                  size: 60,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text('Error: ${snapshot.error}'),
-                )
-              ];
-            } else {
-              children = const <Widget>[
-                SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: CircularProgressIndicator(),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Text('Awaiting data...'),
-                )
-              ];
-            }
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: children,
+      body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isLoading == false) ...[
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: BarChart(barChartData),
               ),
-            );
-          },
-        ),
-      ),
+            ] else ...[
+              const SizedBox(
+                width: 100,
+                height: 100,
+                child: CircularProgressIndicator(),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Text('Awaiting data...'),
+              )
+            ]
+          ]),
       bottomNavigationBar: _buildControlWidgets(),
     );
   }
 
   Widget _buildControlWidgets() {
     return Container(
-      height: 200,
+      height: 100,
       color: Color.fromARGB(255, 203, 188, 188),
       child: ListView(
         children: [
-          SwitchListTile(
-            title: const Text('ShowBorder'),
-            onChanged: (bool val) => setState(() => this._showBorder = val),
-            value: this._showBorder,
-          ),
-          SwitchListTile(
-            title: const Text('ShowGrid'),
-            onChanged: (bool val) => setState(() => this._showGrid = val),
-            value: this._showGrid,
+          ListTile(
+            title: const Text('Choose the desired patient:'),
+            trailing: DropdownButton(
+              value: _btn2SelectedVal,
+              hint: const Text('Choose'),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() => _btn2SelectedVal = newValue);
+                }
+              },
+              items: _dropDownMenuItems,
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -363,6 +405,17 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
             },
             child: Text("load data"),
           ),
+
+          /*SwitchListTile(
+            title: const Text('ShowBorder'),
+            onChanged: (bool val) => setState(() => this._showBorder = val),
+            value: this._showBorder,
+          ),*/
+          /*SwitchListTile(
+            title: const Text('ShowGrid'),
+            onChanged: (bool val) => setState(() => this._showGrid = val),
+            value: this._showGrid,
+          ),*/
         ],
       ),
     );

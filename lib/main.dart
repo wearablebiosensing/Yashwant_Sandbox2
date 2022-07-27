@@ -94,11 +94,11 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
   void initState() {
     _loginStatus = googleSignIn.currentUser != null;
     super.initState();
-    WidgetsBinding.instance.endOfFrame.then(
+    /* WidgetsBinding.instance.endOfFrame.then(
       (_) {
-        if (mounted) _loadCSV(context);
+        if (mounted) _loadCSV2();
       },
-    );
+    );*/
   }
 
   @override
@@ -128,20 +128,6 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
       },
       child: Text("Sing out"),
     );
-
-    final uploadToNormal = ElevatedButton(
-      onPressed: () {
-        _uploadToNormal();
-      },
-      child: Text("Upload to internship folder"),
-    );
-
-    final displayFileContent = ElevatedButton(
-      onPressed: () {
-        _downloadFile();
-      },
-      child: Text("display file content"),
-    );
     final csvViewer = ElevatedButton(
       onPressed: () {
         _loadCSV(context);
@@ -159,7 +145,7 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const FlBarChartExample()),
+          MaterialPageRoute(builder: (context) => const MyApp()),
         );
       },
     );
@@ -170,12 +156,10 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
         Center(child: signIn),
         Center(child: signOut),
         Divider(),
-        Center(child: uploadToNormal),
         Center(
             child: _createButton(
                 "Files in internship folder", _showFilesInMyFolder)),
         // Center(child: _createButton("file content is: ", _downloadFile())),
-        Center(child: displayFileContent),
         Center(child: _createButton("All file list", _allFileList)),
         Center(child: csvViewer),
         Center(child: csvViewer1),
@@ -233,87 +217,6 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
     return driveApi.files.list(
       spaces: 'drive',
     );
-  }
-
-  Future<String?> _getFolderId(drive.DriveApi driveApi) async {
-    const mimeType = "application/vnd.google-apps.folder";
-    String folderName = "Flutter-sample-by-tf";
-
-    try {
-      final found = await driveApi.files.list(
-        q: "mimeType = '$mimeType' and name = '$folderName'",
-        $fields: "files(id, name)",
-      );
-      final files = found.files;
-      if (files == null) {
-        return null;
-      }
-
-      if (files.isNotEmpty) {
-        return files.first.id;
-      }
-
-      // Create a folder
-      var folder = new drive.File();
-      folder.name = folderName;
-      folder.mimeType = mimeType;
-      final folderCreation = await driveApi.files.create(folder);
-      print("Folder ID: ${folderCreation.id}");
-
-      return folderCreation.id;
-    } catch (e) {
-      print(e);
-      // I/flutter ( 6132): DetailedApiRequestError(status: 403, message: The granted scopes do not give access to all of the requested spaces.)
-      return null;
-    }
-  }
-
-  Future<void> _uploadToNormal() async {
-    try {
-      final driveApi = await _getDriveApi();
-      if (driveApi == null) {
-        return;
-      }
-      // Not allow a user to do something else
-      showGeneralDialog(
-        context: context,
-        barrierDismissible: false,
-        transitionDuration: Duration(seconds: 2),
-        barrierColor: Colors.black.withOpacity(0.5),
-        pageBuilder: (context, animation, secondaryAnimation) => Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
-      final folderId = await _getFolderId(driveApi);
-      if (folderId == null) {
-        return;
-      }
-
-      // Create data here instead of loading a file
-      const contents = "this is a sample file";
-      final Stream<List<int>> mediaStream =
-          Future.value(contents.codeUnits).asStream().asBroadcastStream();
-      var media = new drive.Media(mediaStream, contents.length);
-
-      // Set up File info
-      var driveFile = new drive.File();
-      final timestamp = DateFormat("yyyy-MM-dd-hhmmss").format(DateTime.now());
-      driveFile.name = "sample file-$timestamp.txt";
-      driveFile.modifiedTime = DateTime.now().toUtc();
-      driveFile.parents = [folderId];
-
-      // Upload
-      final response =
-          await driveApi.files.create(driveFile, uploadMedia: media);
-      print("response: $response");
-
-      // simulate a slow process
-      await Future.delayed(Duration(seconds: 2));
-    } finally {
-      // Remove a dialog
-      Navigator.pop(context);
-    }
   }
 
   Future<drive.FileList> _showFilesInMyFolder(drive.DriveApi driveApi) async {
@@ -405,53 +308,6 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
     );
   }
 
-  Future<void> _downloadFile() async {
-    String fileID = '1PQLkN3vC_ew-1Otedw5YY_bYZ8rEHq9b';
-
-    final driveApi = await _getDriveApi();
-    if (driveApi == null) {
-      return;
-    }
-    drive.Media fileContent = await driveApi.files.get(fileID,
-        downloadOptions: drive.DownloadOptions.fullMedia) as drive.Media;
-
-    print("OK1");
-    print(fileContent.toString());
-    print(fileContent.stream);
-    print("OK2");
-
-    List<int> dataStore = [];
-    fileContent.stream.listen((data) {
-      print("OK3");
-      print("DataReceived: ${data.length}");
-      print("OK4");
-      dataStore.insertAll(dataStore.length, data);
-    }, onDone: () async {
-      print("OK5");
-      // print(dataStore);
-      // Directory tempDir = await getTemporaryDirectory(); //Get temp folder using Path Provider
-      // Directory tempDir = await getTemporaryDirectory();
-      print("OK6");
-      // String tempPath = tempDir.path; //Get path to that location
-      print("OK7");
-
-      File file = File(
-          'C:/WBL/Projects/filedisplay_2/asset/test.csv'); //Create a dummy file
-      print(file.path);
-      print("OK8");
-      // await file.writeAsString(contents);
-      await file.writeAsBytes(
-          dataStore); //Write to that file from the datastore you created from the Media stream
-      print("OK9");
-      String content = file.readAsStringSync(); // Read String from the file
-      print("OK10");
-      print(content); //Finally you have your text
-      print("Task Done");
-    }, onError: (error) {
-      print("Some Error");
-    });
-  }
-
   Future<void> _loadCSV(BuildContext context) async {
     List<List<dynamic>> _data = [];
     final _rawData = await rootBundle.loadString("data1.csv");
@@ -520,27 +376,6 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
     List ED_data = await sheet.values.column(9);
 
     List PID_data = await sheet.values.column(10);
-
-    /* List<List<dynamic>> csvData = [];
-    final _rawData = await rootBundle.loadString("data2.csv");
-    List<List<dynamic>> _listData = const CsvToListConverter(
-            eol: "\r\n", fieldDelimiter: ",", shouldParseNumbers: true)
-        .convert(_rawData);
-    setState(() {
-      csvData = _listData;
-    });
-*/
-    //List location = [];
-    //List ST = [];
-    //List ED = [];
-    // List<String> PID = [];
-
-    /*for (int i = 1; i < csvData.length; i++) {
-      //location.add(csvData[i][4]);
-      //ST.add(csvData[i][7]);
-      //ED.add(csvData[i][8]);
-      // PID.add(csvData[i][9]);
-    }*/
 
     // build Unique Patient ID list.
     List<String> uniquePID = [];
