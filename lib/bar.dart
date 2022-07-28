@@ -35,24 +35,6 @@ const _credentials = r'''
 */
 const _spreadsheetId = '1Hhnj4S0yARiFfqvSyGQkkETsWVjxknQldxOW2qts1V4';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Bar Graph',
-      home: FlBarChartExample(),
-    );
-  }
-}
-
 class FlBarChartExample extends StatefulWidget {
   const FlBarChartExample({Key? key}) : super(key: key);
 
@@ -120,7 +102,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
   bool isLoading = true;
 
   @override
-  Future<Map<double, double>> _loadCSV2() async {
+  Future<void> _loadCSV2() async {
     final gsheets = GSheets(_credentials);
     final ss = await gsheets.spreadsheet(_spreadsheetId);
     final sheet = await ss.worksheetByTitle('Copy of all_usage_data');
@@ -185,6 +167,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       for (int j = 0; j < uniqueLocation.length; j++) {
         String locationID = uniqueLocation[j];
 
+        bool isPatientLocationFound = false;
         var totalTimeSpent = Duration(hours: 0, minutes: 0, seconds: 0);
         for (int k = 1; k < location_data.length; k++) {
           final String orgLocation = location_data[k];
@@ -193,21 +176,25 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
 
           if (orgPatientID == patientID && orgLocation == locationID) {
             totalTimeSpent = totalTimeSpent + orgTimeSpent;
+            isPatientLocationFound = true;
           }
         } // end of for loop for csvData
 
-        var totalTimeSpentString = totalTimeSpent.toString();
+        if (isPatientLocationFound == true) {
+          var totalTimeSpentString = totalTimeSpent.toString();
 
-        finalPatientData[index][0] = patientID;
-        finalPatientData[index][1] = locationID;
-        finalPatientData[index][2] = totalTimeSpentString;
+          finalPatientData[index][0] = patientID;
+          finalPatientData[index][1] = locationID;
+          finalPatientData[index][2] = totalTimeSpentString;
 
-        index = index + 1;
+          index = index + 1;
+        }
       } // end of for loop for uniqueLocation
 
     } // end of for loop for uniquePID
 
     // define IDs for locations.
+    /*
     var locationCodes = <String, double>{
       'main_activity': 1.00,
       'CareWell': 2.00,
@@ -222,6 +209,19 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       'Reminders': 11.00,
       'Community': 12.00,
     };
+    */
+
+    // var locationCodes = [];
+    var locationCodes = <String, double>{};
+    double locationCode = 0.00;
+    for (int j = 0; j < uniqueLocation.length; j++) {
+      String locationDesc = uniqueLocation[j];
+      locationCode = locationCode + 1.00;
+      // locationCodes.add('$locationDesc: $locationCode');
+      var record = <String, double>{locationDesc: locationCode};
+      locationCodes.addEntries(record.entries);
+    }
+    print('################ locationCodes: $locationCodes ################');
 
     //final _data1 = <double, double>{1: 9, 2: 12, 3: 10, 4: 20, 5: 14, 6: 18};
     List eachPatientData = [];
@@ -232,7 +232,6 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
 
     for (int i = 0; i < finalPatientData.length; i++) {
       if (finalPatientData[i][0] == _btn2SelectedVal) {
-        print('Inside the ');
         String location = finalPatientData[i][1];
         String timeSpentStr = finalPatientData[i][2];
 
@@ -242,7 +241,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
         int minutes = int.parse(time[1]);
         String secondsStr = time[2];
 
-        // Extract the secoinds & micro seconds from Seconds string.
+        // Extract the seconds & micro seconds from Seconds string.
         final secondsTotal = secondsStr.split('.');
         int seconds_Sec = int.parse(secondsTotal[0]);
         int seconds_MicroSec = int.parse(secondsTotal[1]);
@@ -254,7 +253,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
             seconds: seconds_Sec,
             microseconds: seconds_MicroSec);
 
-        // Convert the Duration into milli seconds.
+        // Convert the Duration into minutes.
         double timeSpent = (timeSpentDuration.inMinutes).toDouble();
 
         // limit the timeSpent value
@@ -272,7 +271,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
           if (key == location) {
             locationCode = value;
             Breakpoint;
-          } else {}
+          }
         });
 
         // convert the list into an array to display bar graph purpose
@@ -289,7 +288,6 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       data6.addAll(eachPatientData_array);
       isLoading = false;
     });
-    return eachPatientData_array;
   }
 
   bool _showBorder = true;
@@ -298,7 +296,8 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
   @override
   Widget build(BuildContext context) {
     print("Widget build");
-
+    print(eachPatientData_array);
+/*
     for (var entry in _data1.entries) {
       print("entry key : ${entry.key.toInt()}");
       print("entry key runtimetype : ${entry.key.toInt().runtimeType}");
@@ -306,7 +305,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       print("entry value : ${entry.value}");
       print("entry value runtimetype : ${entry.value.runtimeType}");
     }
-
+*/
     final barGroups = <BarChartGroupData>[
       for (var entry in _data1.entries)
         BarChartGroupData(
