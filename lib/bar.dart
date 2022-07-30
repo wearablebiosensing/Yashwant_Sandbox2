@@ -87,16 +87,6 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       .toList();
   @override
   final _data1 = <double, double>{1: 9, 2: 12, 3: 10, 4: 20, 5: 14, 6: 18};
-  final data3 = <double, double>{
-    1: 0,
-    2: 0,
-    3: 4,
-    4: 1,
-    5: 0,
-    6: 0,
-    7: 0,
-    8: 0
-  };
   final eachPatientData_array = <double, double>{};
 
   bool isLoading = true;
@@ -296,18 +286,18 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
   @override
   Widget build(BuildContext context) {
     print("Widget build");
-    print(eachPatientData_array);
-/*
-    for (var entry in _data1.entries) {
-      print("entry key : ${entry.key.toInt()}");
-      print("entry key runtimetype : ${entry.key.toInt().runtimeType}");
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Patient Insights"),
+      ),
+      body: _createBody(context),
+      bottomNavigationBar: _buildControlWidgets(),
+    );
+  }
 
-      print("entry value : ${entry.value}");
-      print("entry value runtimetype : ${entry.value.runtimeType}");
-    }
-*/
+  Widget _createBody(BuildContext context) {
     final barGroups = <BarChartGroupData>[
-      for (var entry in _data1.entries)
+      for (var entry in eachPatientData_array.entries)
         BarChartGroupData(
           x: entry.key.toInt(),
           barRods: [
@@ -330,15 +320,17 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       titlesData: FlTitlesData(
         show: true,
         bottomTitles: AxisTitles(
-          axisNameWidget: Text('Screens'),
+          axisNameWidget: Text('Locations'),
           sideTitles: SideTitles(
             showTitles: true,
+            /*
             getTitlesWidget: (double val, _) =>
                 Text(DateFormat.MMM().format(DateTime(2020, val.toInt()))),
+                */
           ),
         ),
         leftTitles: AxisTitles(
-          axisNameWidget: Text('Time Spent'),
+          axisNameWidget: Text('Time Spent (in minutes)'),
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: (double val, _) {
@@ -350,33 +342,18 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       ),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Patient Insights"),
-      ),
-      body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isLoading == false) ...[
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: BarChart(barChartData),
-              ),
-            ] else ...[
-              const SizedBox(
-                width: 100,
-                height: 100,
-                child: CircularProgressIndicator(),
-              ),
-              const Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: Text('Awaiting data...'),
-              )
-            ]
-          ]),
-      bottomNavigationBar: _buildControlWidgets(),
-    );
+    if (isLoading == false) {
+      return Padding(
+        padding: const EdgeInsets.all(8),
+        child: BarChart(barChartData),
+      );
+    } else {
+      return const SizedBox(
+        width: 100,
+        height: 100,
+        child: CircularProgressIndicator(),
+      );
+    }
   }
 
   Widget _buildControlWidgets() {
