@@ -1,5 +1,3 @@
-// ignore_for_file: override_on_non_overriding_member, unused_field, non_constant_identifier_names, prefer_typing_uninitialized_variables, avoid_print
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis/admin/directory_v1.dart';
@@ -22,32 +20,18 @@ const _credentials = r'''
 }
 ''';
 
-//final eachPatientData = [CareWell: 0, application_closed: 4, Dashboard: 1, Education: 0, Education_https:sites.google.com/view/carewell/home: 0, Education_https:sites.google.com/view/carewell/caregiving: 0, Managing Care: 0];
-/*final eachPatientData_array = <String, int>{
-  'CareWell': 0,
-  'application_closed': 4,
-  'Dashboard': 1,
-  'Education': 0,
-  'Education_https:sites.google.com/view/carewell/home': 0,
-  'Education_https:sites.google.com/view/carewell/caregiving: 0, Managing Care':
-      0
-};
-*/
 const _spreadsheetId = '1Hhnj4S0yARiFfqvSyGQkkETsWVjxknQldxOW2qts1V4';
 
-class FlBarChartExample extends StatefulWidget {
-  const FlBarChartExample({Key? key}) : super(key: key);
+class FlBarChartExample1 extends StatefulWidget {
+  const FlBarChartExample1({Key? key}) : super(key: key);
 
   @override
-  _FlBarChartExampleState createState() => _FlBarChartExampleState();
+  _FlBarChartExampleState1 createState() => _FlBarChartExampleState1();
 }
 
-class _FlBarChartExampleState extends State<FlBarChartExample> {
-  late Future<Map<double, double>> data5;
+class _FlBarChartExampleState1 extends State<FlBarChartExample1> {
   String? _btn2SelectedVal;
-  var data6 = <double, double>{};
-
-  var data;
+  String? _btn3SelectedVal;
   @override
   void initState() {
     super.initState();
@@ -85,11 +69,31 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
         ),
       )
       .toList();
-  @override
-  final _data1 = <double, double>{1: 9, 2: 12, 3: 10, 4: 20, 5: 14, 6: 18};
+
+  static const ScreenItems = <String>[
+    'Main activity',
+    'Carewell',
+    'App closed',
+    'Dashboard',
+    'Education',
+    'Managing care',
+    'Video hub',
+    'Reminders',
+    'Community',
+    'Troubleshooting'
+  ];
+
+  final List<DropdownMenuItem<String>> _dropDownScreenItems = ScreenItems.map(
+    (String value) => DropdownMenuItem<String>(
+      value: value,
+      child: Text(value),
+    ),
+  ).toList();
   final eachPatientData_array = <double, double>{};
+  final DateAndTimespent_array = <String, double>{};
 
   bool isLoading = true;
+  bool initialDataEntered = false;
 
   @override
   Future<void> _loadCSV2() async {
@@ -138,9 +142,6 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       timeSpentList.add(duration);
     }
 
-    // for each unique patient, and for each unique location, calculate the sum of time spent.
-    // List<List<dynamic>> finalPatientData = [];
-    // create 2D List which contains empty rows & column to hold the final patienty data.
     int uniquePIDCount = uniquePID.length;
 
     int uniqueLocationCount = uniqueLocation.length;
@@ -184,24 +185,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
     } // end of for loop for uniquePID
 
     // define IDs for locations.
-    /*
-    var locationCodes = <String, double>{
-      'main_activity': 1.00,
-      'CareWell': 2.00,
-      'application_closed': 3.00,
-      'Dashboard': 4.00,
-      'Education': 5.00,
-      'Education_https://sites.google.com/view/carewell/home': 6.00,
-      'Education_https://sites.google.com/view/carewell/caregiving': 7.00,
-      'Managing Care': 8.00,
-      'Managing Care_https://sites.google.com/view/managingcare-cw/home': 9.00,
-      'Video Hub': 10.00,
-      'Reminders': 11.00,
-      'Community': 12.00,
-    };
-    */
 
-    // var locationCodes = [];
     var locationCodes = <String, double>{};
     double locationCode = 0.00;
     for (int j = 0; j < uniqueLocation.length; j++) {
@@ -213,12 +197,11 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
     }
     print('################ locationCodes: $locationCodes ################');
 
-    //final _data1 = <double, double>{1: 9, 2: 12, 3: 10, 4: 20, 5: 14, 6: 18};
     List eachPatientData = [];
 
-    //print(' &&&&&&&&&&&& _btn2SelectedVal: $_btn2SelectedVal &&&&&&&&&&&&');
+    print(' &&&&&&&&&&&& _btn2SelectedVal: $_btn2SelectedVal &&&&&&&&&&&&');
     print(
-        ' &&&&&&&&&&&& finalPatientData.length: ${finalPatientData.length} &&&&&&&&&&&&');
+        ' &&&&&&&&&&&& finalPatientData.length: $finalPatientData.length &&&&&&&&&&&&');
 
     for (int i = 0; i < finalPatientData.length; i++) {
       if (finalPatientData[i][0] == _btn2SelectedVal) {
@@ -278,6 +261,240 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
       isLoading = false;
     });
   }
+/*
+  @override
+  Future<void> _loadCSV3() async {
+    final gsheets = GSheets(_credentials);
+    final ss = await gsheets.spreadsheet(_spreadsheetId);
+    final sheet = await ss.worksheetByTitle('Copy of all_usage_data');
+    print("Gsheets initalized");
+
+    List<String> location_data = await sheet!.values.column(5);
+    List ST_data = await sheet.values.column(8);
+    List ED_data = await sheet.values.column(9);
+    List PID_data = await sheet.values.column(10);
+
+    // build Unique Patient ID list.
+    List<String> uniquePID = [];
+    for (int i = 0; i < PID_data.length; i++) {
+      String patientID = PID_data[i];
+      if (uniquePID.contains(patientID)) {
+        int index = uniquePID.indexOf(patientID, 0);
+      } else {
+        uniquePID.add(patientID);
+      }
+    }
+    // print(uniquePID);
+
+    // build Unique Locastion ID list.
+    List<String> uniqueLocation = [];
+    for (int i = 0; i < location_data.length; i++) {
+      String location1 = location_data[i];
+      if (uniqueLocation.contains(location1)) {
+        int index = uniqueLocation.indexOf(location1, 0);
+      } else {
+        uniqueLocation.add(location1);
+      }
+    }
+    // print(uniqueLocation);
+
+    // for all patients, calculate the time spent on each location.
+    List<Duration> timeSpentList = [];
+    for (int i = 0; i < ST_data.length; i++) {
+      int startTimestamp = int.parse(ST_data[i]);
+      final DateTime startDate =
+          DateTime.fromMillisecondsSinceEpoch(startTimestamp);
+      int endTimestamp = int.parse(ED_data[i]);
+      final DateTime endDate =
+          DateTime.fromMillisecondsSinceEpoch(endTimestamp);
+      final Duration duration = endDate.difference(startDate);
+      timeSpentList.add(duration);
+    }
+
+    // build a list for each patient and location and time spent
+    int uniquePIDCount = uniquePID.length;
+    int uniqueLocationCount = uniqueLocation.length;
+    int finalRowsCount = uniquePIDCount * uniqueLocationCount;
+    List finalPatientData = List.generate(
+        finalRowsCount, (_) => List.generate(3, (_) => ''),
+        growable: true);
+
+    int index = 0;
+    for (int i = 0; i < uniquePID.length; i++) {
+      String patientID = uniquePID[i];
+
+      List<dynamic> record = [];
+      for (int j = 0; j < uniqueLocation.length; j++) {
+        String locationID = uniqueLocation[j];
+
+        bool isPatientLocationFound = false;
+        var totalTimeSpent = Duration(hours: 0, minutes: 0, seconds: 0);
+        for (int k = 1; k < location_data.length; k++) {
+          final String orgLocation = location_data[k];
+          final String orgPatientID = PID_data[k];
+          final Duration orgTimeSpent = timeSpentList[k];
+
+          if (orgPatientID == patientID && orgLocation == locationID) {
+            totalTimeSpent = totalTimeSpent + orgTimeSpent;
+            isPatientLocationFound = true;
+          }
+        } // end of for loop for csvData
+
+        if (isPatientLocationFound == true) {
+          var totalTimeSpentString = totalTimeSpent.toString();
+
+          finalPatientData[index][0] = patientID;
+          finalPatientData[index][1] = locationID;
+          finalPatientData[index][2] = totalTimeSpentString;
+
+          index = index + 1;
+        }
+      } // end of for loop for uniqueLocation
+
+    } // end of for loop for uniquePID
+
+    // define IDs for locations.
+    var locationCodes = <String, double>{};
+    double locationCode = 0.00;
+    for (int j = 0; j < uniqueLocation.length; j++) {
+      String locationDesc = uniqueLocation[j];
+      locationCode = locationCode + 1.00;
+      // locationCodes.add('$locationDesc: $locationCode');
+      var record = <String, double>{locationDesc: locationCode};
+      locationCodes.addEntries(record.entries);
+    }
+    // print('################ locationCodes: $locationCodes ################');
+
+    List eachPatientData = [];
+
+    // print(' &&&&&&&&&&&& _btn2SelectedVal: $_btn2SelectedVal &&&&&&&&&&&&');
+    // print(' &&&&&&&&&&&& finalPatientData.length: $finalPatientData.length &&&&&&&&&&&&');
+
+    for (int i = 0; i < finalPatientData.length; i++) {
+      if (finalPatientData[i][0] == _btn2SelectedVal) {
+        String location = finalPatientData[i][1];
+        String timeSpentStr = finalPatientData[i][2];
+
+        // Extract the hrs, mins, sec and micro sec from the time string.
+        final time = timeSpentStr.split(':');
+        int hours = int.parse(time[0]);
+        int minutes = int.parse(time[1]);
+        String secondsStr = time[2];
+
+        // Extract the seconds & micro seconds from Seconds string.
+        final secondsTotal = secondsStr.split('.');
+        int seconds_Sec = int.parse(secondsTotal[0]);
+        int seconds_MicroSec = int.parse(secondsTotal[1]);
+
+        // convert the timeSpent into milli seconds for bar grpah display purpose.
+        Duration timeSpentDuration = Duration(
+            hours: hours,
+            minutes: minutes,
+            seconds: seconds_Sec,
+            microseconds: seconds_MicroSec);
+
+        // Convert the Duration into minutes.
+        double timeSpent = (timeSpentDuration.inMinutes).toDouble();
+
+        // limit the timeSpent value
+        if (timeSpent > 50) {
+          // print('++++++++++++ timeSpent: $timeSpent ++++++++++++');
+          timeSpent = 50;
+        }
+
+        // build the list for bar graph display purpose.
+        eachPatientData.add('$location: $timeSpent');
+
+        // get the location code from location description.
+        double locationCode = -1.00;
+        locationCodes.forEach((key, value) {
+          if (key == location) {
+            locationCode = value;
+            Breakpoint;
+          }
+        });
+
+        // convert the list into an array to display bar graph purpose
+        var record = <double, double>{locationCode: timeSpent};
+        eachPatientData_array.addEntries(record.entries);
+      }
+    } // end of FOR loop
+    // print('----------------------------eachPatientData: $eachPatientData------------------------------------------');
+    // print('eachPatientData_array: $eachPatientData_array');
+    // print(' seleted patient is $_btn2SelectedVal');
+
+    // build a new array patient + location + time spent on that location
+    // The array DateAndTimespent_array format should be: <Date (string) : Timespent (double)>
+    String userSelectedPatientID = '';
+    String userSelectedLocationID = '';
+
+    int index1 = 0;
+    for (int i = 0; i < uniquePID.length; i++) {
+      String patientID = uniquePID[i];
+
+      List<dynamic> record = [];
+      for (int j = 0; j < uniqueLocation.length; j++) {
+        String locationID = uniqueLocation[j];
+
+        bool isPatientLocationFound = false;
+        var totalTimeSpent = Duration(hours: 0, minutes: 0, seconds: 0);
+        for (int k = 1; k < location_data.length; k++) {
+          final String orgLocation = location_data[k];
+          final String orgPatientID = PID_data[k];
+          final String orgTimeSpent = timeSpentList[k];
+
+          String timeSpentStr = finalPatientData[i][2];
+
+          // Extract the hrs, mins, sec and micro sec from the time string.
+          final time = timeSpentStr.split(':');
+          int hours = int.parse(time[0]);
+          int minutes = int.parse(time[1]);
+          String secondsStr = time[2];
+
+          // Extract the seconds & micro seconds from Seconds string.
+          final secondsTotal = secondsStr.split('.');
+          int seconds_Sec = int.parse(secondsTotal[0]);
+          int seconds_MicroSec = int.parse(secondsTotal[1]);
+
+          // convert the timeSpent into milli seconds for bar grpah display purpose.
+          Duration timeSpentDuration = Duration(
+              hours: hours,
+              minutes: minutes,
+              seconds: seconds_Sec,
+              microseconds: seconds_MicroSec);
+
+          // Convert the Duration into minutes.
+          double timeSpent = (timeSpentDuration.inMinutes).toDouble();
+
+          if (orgPatientID == userSelectedPatientID &&
+              orgLocation == userSelectedLocationID) {
+            totalTimeSpent = totalTimeSpent + orgTimeSpent;
+            isPatientLocationFound = true;
+          }
+        } // end of for loop for csvData
+
+        if (isPatientLocationFound == true) {
+          var totalTimeSpentString = totalTimeSpent.toString();
+
+          finalPatientData[index1][0] = patientID;
+          finalPatientData[index1][1] = locationID;
+          finalPatientData[index1][2] = totalTimeSpentString;
+
+          // convert the list into an array to display bar graph purpose
+          var record = <double, double>{locationCode: timeSpent};
+          DateAndTimespent_array.addEntries(record.entries);
+
+          index = index + 1;
+        }
+      } // end of for loop for uniqueLocation
+
+    } // end of for loop for uniquePID
+
+    setState(() {
+      isLoading = false;
+    });
+  } // enf of _loadCSV3()
+*/
 
   bool _showBorder = true;
   bool _showGrid = true;
@@ -357,7 +574,7 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
 
   Widget _buildControlWidgets() {
     return Container(
-      height: 100,
+      height: 200,
       color: Color.fromARGB(255, 203, 188, 188),
       child: ListView(
         children: [
@@ -377,16 +594,72 @@ class _FlBarChartExampleState extends State<FlBarChartExample> {
           ElevatedButton(
             onPressed: () {
               _loadCSV2();
+              initialDataEntered = true;
             },
-            child: Text("load data"),
+            child: Text("load patient data"),
+          ),
+          if (initialDataEntered == true) ...[
+            ListTile(
+              title: const Text('Choose the desired screen:'),
+              trailing: DropdownButton(
+                value: _btn3SelectedVal,
+                hint: const Text('Choose'),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() => _btn3SelectedVal = newValue);
+                  }
+                },
+                items: _dropDownScreenItems,
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _loadCSV2();
+              },
+              child: Text("load screen data"),
+            ),
+          ] else ...[
+            DropdownButton(
+              disabledHint: Text("Can't select"),
+              style: TextStyle(color: Colors.red, fontSize: 30),
+              onChanged: null,
+              value: null,
+              items: _dropDownScreenItems,
+            )
+          ]
+
+/*
+
+          ListTile(
+            title: const Text('Choose the desired screen:'),
+            trailing: DropdownButton(
+              value: _btn3SelectedVal,
+              hint: const Text('Choose'),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() => _btn3SelectedVal = newValue);
+                }
+              },
+              items: _dropDownScreenItems,
+            ),
           ),
 
-          /*SwitchListTile(
+
+
+
+
+          ElevatedButton(
+            onPressed: () {
+              _loadCSV2();
+            },
+            child: Text("load screen data"),
+          ),
+*/ /*SwitchListTile(
             title: const Text('ShowBorder'),
             onChanged: (bool val) => setState(() => this._showBorder = val),
             value: this._showBorder,
-          ),*/
-          /*SwitchListTile(
+          ),
+          SwitchListTile(
             title: const Text('ShowGrid'),
             onChanged: (bool val) => setState(() => this._showGrid = val),
             value: this._showGrid,

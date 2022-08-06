@@ -1,45 +1,18 @@
-// ignore_for_file: unused_local_variable, dead_code, override_on_non_overriding_member, avoid_print, non_constant_identifier_names, unused_element
+// ignore_for_file: unused_local_variable, dead_code, override_on_non_overriding_member, avoid_print, non_constant_identifier_names, unused_element, unnecessary_import
 
 // import 'dart:ffi';
 
-import 'package:csv/csv.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/androidpublisher/v3.dart';
-import 'package:googleapis/clouddebugger/v2.dart';
-import 'package:googleapis/cloudsearch/v1.dart';
-import 'package:googleapis/containeranalysis/v1.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:googleapis/drive/v2.dart' as drive2;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'dart:io';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
-import 'package:path_provider/path_provider.dart';
-import 'package:http/io_client.dart';
 import 'dart:async';
-import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:csv/csv.dart';
-import 'package:csv/csv.dart' as csv1;
-import 'package:faker/faker.dart' as faker;
-import 'package:timezone/standalone.dart';
-import 'package:timezone/data/latest.dart';
-import 'package:timezone/browser.dart';
-import 'package:timezone/standalone.dart';
-import 'package:timezone/src/date_time.dart';
-import 'package:timezone/timezone.dart';
-import 'package:kt_dart/kt.dart';
 import 'bar.dart';
-import 'package:gsheets/gsheets.dart';
-import 'dart:convert';
+import 'bar2.dart';
+import 'bar3.dart';
 
 const _credentials = r'''
 {
@@ -107,7 +80,7 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
       return SafeArea(
         child: Scaffold(
           appBar: AppBar(
-            title: Text("File Display"),
+            title: Text("CSV Display"),
           ),
           body: _createBody(context),
         ),
@@ -130,11 +103,35 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
     );
 
     final new_page = ElevatedButton(
-      child: const Text('Bar Graph'),
+      child: const Text('Time spent for one patients screen time'),
       onPressed: () {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const FlBarChartExample()),
+        );
+      },
+    );
+    final new_page1 = ElevatedButton(
+      child:
+          const Text('Time spent for one particular screen time-- fl_charts '),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FlBarChartExample1()),
+        );
+      },
+    );
+
+    final new_page2 = ElevatedButton(
+      child: const Text(
+          'Time spent for one particular screen time---syncfusion_flutter_charts '),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const MyHomePage(
+                    title: 'example code',
+                  )),
         );
       },
     );
@@ -146,6 +143,8 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
         Center(child: signOut),
         Divider(),
         Center(child: new_page),
+        Center(child: new_page1),
+        Center(child: new_page2),
       ],
     );
   }
