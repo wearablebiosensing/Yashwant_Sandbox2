@@ -30,7 +30,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final eachPatientData_array = <String, double>{};
+  var eachPatientData_array = <String, double>{};
+  // final finalEachPatientData_array = <String, double>{};
   final data1 = <String, double>{
     'Oceania': 1600,
     'Africa': 2490,
@@ -157,7 +158,22 @@ class _MyHomePageState extends State<MyHomePage> {
         // print('Duplicate location found');
       } else {
         // print('unique location found');
-        uniqueLocationList.add(uniqueLocation);
+
+        // do not add the following list of locations to the unite locations list.
+        /*
+        1. application_closed
+        2. main_activity
+        3. CareWell
+        4. Media Player
+        */
+        if (uniqueLocation.contains('application_closed') ||
+            uniqueLocation.contains('main_activity') ||
+            uniqueLocation.contains('CareWell') ||
+            uniqueLocation.contains('Media Player')) {
+          print('location is one of the 4 values');
+        } else {
+          uniqueLocationList.add(uniqueLocation);
+        }
       }
     }
     print('uniqueLocationList: $uniqueLocationList');
@@ -221,24 +237,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     } // end of for loop for uniquePID
 
-    // define IDs for locations.
-
-    // var locationCodes = [];
-    /*
-    var locationCodes = <String, double>{};
-    double locationCode = 0.00;
-    for (int j = 0; j < uniqueLocation.length; j++) {
-      String locationDesc = uniqueLocation[j];
-      locationCode = locationCode + 1.00;
-      // locationCodes.add('$locationDesc: $locationCode');
-      var record = <String, double>{locationDesc: locationCode};
-      locationCodes.addEntries(record.entries);
-    }
-    print('################ locationCodes: $locationCodes ################');
-    */
-
-    //final _data1 = <double, double>{1: 9, 2: 12, 3: 10, 4: 20, 5: 14, 6: 18};
     List eachPatientData = [];
+    List<double> finalTimeSpentList = [];
+    List finalEachPatientData = [];
 
     //print(' &&&&&&&&&&&& _btn2SelectedVal: $_btn2SelectedVal &&&&&&&&&&&&');
     print(
@@ -272,35 +273,64 @@ class _MyHomePageState extends State<MyHomePage> {
 
         // limit the timeSpent value
 
-        if (timeSpent > 200) {
-          print('++++++++++++ timeSpent: $timeSpent ++++++++++++');
-          timeSpent = 200;
-        }
-
         // build the list for bar graph display purpose.
-        eachPatientData.add('$location: $timeSpent');
-
-        // get the location code from location description.
-        /*
-        double locationCode = -1.00;
-        locationCodes.forEach((key, value) {
-          if (key == location) {
-            locationCode = value;
-            Breakpoint;
-          }
-        });
-        */
-
-        // convert the list into an array to display bar graph purpose
-        var record = <String, double>{location: timeSpent};
-        eachPatientData_array.addEntries(record.entries);
+        eachPatientData.add('$location:$timeSpent');
       }
     } // end of FOR loop
     print(
         '----------------------------eachPatientData: $eachPatientData------------------------------------------');
 
-    print('eachPatientData_array: $eachPatientData_array');
-    print(' seleted patient is $_btn2SelectedVal');
+    // sort eachPatientData list as per timespent in ascending order for display purpose.
+
+    for (int k = 0; k < eachPatientData.length; k++) {
+      String record = eachPatientData[k];
+      print('record: $record');
+
+      List<String> locationTimespentList = record.split(':');
+      final String location = locationTimespentList[0];
+      print('         ******* location: $location');
+      final String timeSpent = locationTimespentList[1];
+      print('         ******* timeSpent: $timeSpent');
+      double timeSpentDouble = double.parse(timeSpent);
+      print('         ******* timeSpentDouble: $timeSpentDouble');
+      finalTimeSpentList.add(timeSpentDouble);
+    } // end of FOR loop
+
+    print('finalTimeSpentList - before sorting: $finalTimeSpentList');
+    finalTimeSpentList.sort();
+    print('finalTimeSpentList - after sorting: $finalTimeSpentList');
+
+    // empty the list: eachPatientData_array
+    print('eachPatientData_array before clearing: $eachPatientData_array');
+    eachPatientData_array.clear();
+    print('eachPatientData_array after clearing: $eachPatientData_array');
+
+    for (int i = 0; i < finalTimeSpentList.length; i++) {
+      double finalTimeSpent = finalTimeSpentList[i];
+      print(
+          '-------------------- finalTimeSpent: $finalTimeSpent ---------------------');
+      for (int k = 0; k < eachPatientData.length; k++) {
+        String record = eachPatientData[k];
+        List<String> locationTimespentList = record.split(':');
+        final String location = locationTimespentList[0];
+        print('         ******* location: $location *******');
+        final String timeSpent = locationTimespentList[1];
+        print('         timeSpent: $timeSpent');
+        double timeSpentDouble = double.parse(timeSpent);
+        print('         timeSpentDouble: $timeSpentDouble');
+
+        if (timeSpentDouble == finalTimeSpent) {
+          print('         +++++ MATCH ++++');
+          var record = <String, double>{location: timeSpentDouble};
+          eachPatientData_array.addEntries(record.entries);
+        }
+        print('         eachPatientData_array: $eachPatientData_array');
+      }
+    }
+
+    print(
+        '----------------------------eachPatientData_array: $eachPatientData_array------------------------------------------');
+
     setState(() {
       isLoading = false;
     });
@@ -626,7 +656,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               _loadCSV2();
             },
-            child: Text("load CSv data"),
+            child: Text("Load Patient Data"),
           ),
           if (isLoading == false) ...[
             ListTile(
@@ -646,7 +676,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 _loadCSV2();
               },
-              child: Text("load screen data"),
+              child: Text("Load Screen Data"),
             ),
           ] else ...[
             DropdownButton(

@@ -111,7 +111,7 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
         );
       },
     );
-    final new_page1 = ElevatedButton(
+/*    final new_page1 = ElevatedButton(
       child:
           const Text('Time spent for one particular screen time-- fl_charts '),
       onPressed: () {
@@ -121,7 +121,7 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
         );
       },
     );
-
+*/
     final new_page2 = ElevatedButton(
       child: const Text(
           'Time spent for one particular screen time---syncfusion_flutter_charts '),
@@ -143,7 +143,7 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
         Center(child: signOut),
         Divider(),
         Center(child: new_page),
-        Center(child: new_page1),
+        //  Center(child: new_page1),
         Center(child: new_page2),
       ],
     );
