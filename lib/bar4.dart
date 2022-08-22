@@ -19,28 +19,23 @@ const _credentials = r'''
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gsheets%40filedisplay2.iam.gserviceaccount.com"
 }
 ''';
+
 const _spreadsheetId = '1Hhnj4S0yARiFfqvSyGQkkETsWVjxknQldxOW2qts1V4';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+class MyHomePage1 extends StatefulWidget {
+  const MyHomePage1({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage1> {
   var eachPatientData_array = <String, double>{};
+  var eachPatientData_array1 = <String, double>{};
 
-  final data1 = <String, double>{
-    'Oceania': 1600,
-    'Africa': 2490,
-    'S America': 2900,
-    'Europe': 23050,
-    'N America': 24880,
-    'Asia': 34390
-  };
   late List<PatientData> _chartData;
+  late List<PatientData1> _chartData1;
   late TooltipBehavior _tooltipBehavior;
   String? _btn2SelectedVal;
   bool isLoading = true;
@@ -48,9 +43,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String? _btn3SelectedVal;
 
   static const ScreenItems = <String>[
-    'Main activity',
-    'Carewell',
-    'App closed',
     'Dashboard',
     'Education',
     'Managing care',
@@ -92,8 +84,248 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       )
       .toList();
+  Future<void> _loadCSV() async {
+    final gsheets = GSheets(_credentials);
+    final ss = await gsheets.spreadsheet(_spreadsheetId);
+    final sheet = await ss.worksheetByTitle('Copy of all_usage_data');
+    print("Gsheets initalized");
+
+    List<String> location_data = await sheet!.values.column(5);
+    List ST_data = await sheet.values.column(8);
+    List ED_data = await sheet.values.column(9);
+    List PID_data = await sheet.values.column(10);
+
+    // build Unique Patient ID list.
+    List<String> uniquePID = [];
+    for (int i = 0; i < PID_data.length; i++) {
+      String patientID = PID_data[i];
+      if (uniquePID.contains(patientID)) {
+        int index = uniquePID.indexOf(patientID, 0);
+      } else {
+        uniquePID.add(patientID);
+      }
+    }
+    print('uniquePID: $uniquePID');
+
+    // build a list of unique locations
+    List<String> uniqueLocationList = [];
+    for (int i = 0; i < location_data.length; i++) {
+      String orgLocation = location_data[i];
+      // print('         ******* orgLocation: $orgLocation');
+
+      String uniqueLocation = '';
+      if (orgLocation.contains('_')) {
+        // print('         org location contains _');
+        List<String> OrgLocSplitList = orgLocation.split('_');
+        final String OrgLocationFirstValue = OrgLocSplitList[0];
+        // print('         ******* OrgLocationFirstValue: $OrgLocationFirstValue');
+        final String OrgLocationSecondValue = OrgLocSplitList[1];
+        // print('         ******* OrgLocationSecondValue: $OrgLocationSecondValue');
+
+        if (OrgLocationSecondValue == 'activity' ||
+            OrgLocationSecondValue == 'closed') {
+          uniqueLocation = orgLocation;
+          // print('         org location contains https');
+        } else {
+          uniqueLocation = OrgLocationFirstValue;
+          // print('         org location does NOT contain https');
+        }
+        /*
+        if (OrgLocationSecondValue.contains('https')) {
+          uniqueLocation = OrgLocationFirstValue;
+          // print('         org location contains https');
+        } else {
+          uniqueLocation = orgLocation;
+          // print('         org location does NOT contain https');
+        }
+        */
+      } else {
+        // print('         org location does NOT contain _');
+        uniqueLocation = orgLocation;
+      }
+
+      // determine the uniqeue location.
+      if (uniqueLocationList.contains(uniqueLocation)) {
+        // print('Duplicate location found');
+      } else {
+        // print('unique location found');
+
+        // do not add the following list of locations to the unite locations list.
+        /*
+        1. application_closed
+        2. main_activity
+        3. CareWell
+        4. Media Player
+        */
+        if (uniqueLocation.contains('application_closed') ||
+            uniqueLocation.contains('main_activity') ||
+            uniqueLocation.contains('CareWell') ||
+            uniqueLocation.contains('Media Player')) {
+          print('location is one of the 4 values');
+        } else {
+          uniqueLocationList.add(uniqueLocation);
+        }
+      }
+    }
+    print('uniqueLocationList: $uniqueLocationList');
+
+    // for all patients, calculate the time spent on each location.
+    List<Duration> timeSpentList = [];
+    for (int i = 0; i < ST_data.length; i++) {
+      int startTimestamp = int.parse(ST_data[i]);
+      final DateTime startDate =
+          DateTime.fromMillisecondsSinceEpoch(startTimestamp);
+      int endTimestamp = int.parse(ED_data[i]);
+      final DateTime endDate =
+          DateTime.fromMillisecondsSinceEpoch(endTimestamp);
+      final Duration duration = endDate.difference(startDate);
+      timeSpentList.add(duration);
+    }
+
+    // for each unique patient, and for each unique location, calculate the sum of time spent.
+    // List<List<dynamic>> finalPatientData = [];
+    // create 2D List which contains empty rows & column to hold the final patienty data.
+    int uniquePIDCount = uniquePID.length;
+    int uniqueLocationCount = uniqueLocationList.length;
+    int finalRowsCount = uniquePIDCount * uniqueLocationCount;
+
+    List finalPatientData = List.generate(
+        finalRowsCount, (_) => List.generate(3, (_) => ''),
+        growable: true);
+
+    int index = 0;
+    for (int i = 0; i < uniquePID.length; i++) {
+      String patientID = uniquePID[i];
+
+      List<dynamic> record = [];
+      for (int j = 0; j < uniqueLocationList.length; j++) {
+        String uniqueLocation = uniqueLocationList[j];
+
+        bool isPatientLocationFound = false;
+        var totalTimeSpent = Duration(hours: 0, minutes: 0, seconds: 0);
+        for (int k = 0; k < location_data.length; k++) {
+          final String orgLocation = location_data[k];
+          final String orgPatientID = PID_data[k];
+          final Duration orgTimeSpent = timeSpentList[k];
+
+          if (orgPatientID == patientID &&
+              orgLocation.contains(uniqueLocation)) {
+            totalTimeSpent = totalTimeSpent + orgTimeSpent;
+            isPatientLocationFound = true;
+          }
+        } // end of for loop for csvData
+
+        if (isPatientLocationFound == true) {
+          var totalTimeSpentString = totalTimeSpent.toString();
+
+          finalPatientData[index][0] = patientID;
+          finalPatientData[index][1] = uniqueLocation;
+          finalPatientData[index][2] = totalTimeSpentString;
+
+          index = index + 1;
+        }
+      } // end of for loop for uniqueLocation
+
+    } // end of for loop for uniquePID
+
+    List eachPatientData = [];
+
+    //print(' &&&&&&&&&&&& _btn2SelectedVal: $_btn2SelectedVal &&&&&&&&&&&&');
+    print(
+        ' &&&&&&&&&&&& finalPatientData.length: ${finalPatientData.length} &&&&&&&&&&&&');
+
+    for (int i = 0; i < finalPatientData.length; i++) {
+      if (finalPatientData[i][0] == _btn2SelectedVal) {
+        String location = finalPatientData[i][1];
+        String timeSpentStr = finalPatientData[i][2];
+
+        // Extract the hrs, mins, sec and micro sec from the time string.
+        final time = timeSpentStr.split(':');
+        int hours = int.parse(time[0]);
+        int minutes = int.parse(time[1]);
+        String secondsStr = time[2];
+
+        // Extract the seconds & micro seconds from Seconds string.
+        final secondsTotal = secondsStr.split('.');
+        int seconds_Sec = int.parse(secondsTotal[0]);
+        int seconds_MicroSec = int.parse(secondsTotal[1]);
+
+        // convert the timeSpent into milli seconds for bar grpah display purpose.
+        Duration timeSpentDuration = Duration(
+            hours: hours,
+            minutes: minutes,
+            seconds: seconds_Sec,
+            microseconds: seconds_MicroSec);
+
+        // Convert the Duration into minutes.
+        double timeSpent = (timeSpentDuration.inMinutes).toDouble();
+
+        // limit the timeSpent value
+
+        // build the list for bar graph display purpose.
+        eachPatientData.add('$location:$timeSpent');
+
+        // convert the list into an array to display bar graph purpose
+        /*
+        var record = <String, double>{location: timeSpent};
+        eachPatientData_array.addEntries(record.entries);
+        */
+      }
+    } // end of FOR loop
+    print(
+        '----------------------------eachPatientData - before sorting: $eachPatientData------------------------------------------');
+
+    // sort eachPatientData list as per timespent in ascending order for display purpose.
+    List<double> finalTimeSpentList = [];
+    for (int k = 0; k < eachPatientData.length; k++) {
+      String record = eachPatientData[k];
+      print('record: $record');
+
+      List<String> locationTimespentList = record.split(':');
+      final String location = locationTimespentList[0];
+      print('         ******* location: $location');
+      final String timeSpent = locationTimespentList[1];
+      print('         ******* timeSpent: $timeSpent');
+      double timeSpentDouble = double.parse(timeSpent);
+      print('         ******* timeSpentDouble: $timeSpentDouble');
+      finalTimeSpentList.add(timeSpentDouble);
+    } // end of FOR loop
+
+    List finalEachPatientData = [];
+    for (int i = 0; i < finalTimeSpentList.length; i++) {
+      double finalTimeSpent = finalTimeSpentList[i];
+      for (int k = 0; k < eachPatientData.length; k++) {
+        String record = eachPatientData[k];
+        List<String> locationTimespentList = record.split(':');
+        final String location = locationTimespentList[0];
+        // print('         ******* location: $location');
+        final String timeSpent = locationTimespentList[1];
+        // print('         ******* timeSpent: $timeSpent');
+        double timeSpentDouble = double.parse(timeSpent);
+        // print('         ******* timeSpentDouble: $timeSpentDouble');
+
+        if (timeSpentDouble == finalTimeSpent) {
+          var record = <String, double>{location: timeSpentDouble};
+          eachPatientData_array.addEntries(record.entries);
+        }
+      }
+    }
+
+    print(
+        '----------------------------eachPatientData - after sorting: $eachPatientData_array------------------------------------------');
+
+    //print('eachPatientData_array: $eachPatientData_array');
+    print(' seleted patient is $_btn2SelectedVal');
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   Future<void> _loadCSV2() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final gsheets = GSheets(_credentials);
     final ss = await gsheets.spreadsheet(_spreadsheetId);
     final sheet = await ss.worksheetByTitle('Copy of all_usage_data');
@@ -357,7 +589,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List PID_data = await sheet.values.column(10);
 
     // clear the contents of the array: eachPatientData_array
-    eachPatientData_array.clear();
+    eachPatientData_array1.clear();
 
     // for a given patient id & location id, calculate the time spent for every occurance in the original excel sheet.
     for (int i = 0; i < location_data.length; i++) {
@@ -390,14 +622,14 @@ class _MyHomePageState extends State<MyHomePage> {
           var record = <String, double>{
             startDate.toString(): timeSpentInMins_double
           };
-          eachPatientData_array.addEntries(record.entries);
+          eachPatientData_array1.addEntries(record.entries);
         } /* else {
           print('both PateintId & LocationId does NOT matches');
         } */
       }
     } // end of FOR loop
     print(
-        '----------------------------eachPatientData_array in _loadCSV3() : $eachPatientData_array------------------------------------------');
+        '----------------------------eachPatientData_array in _loadCSV3() : $eachPatientData_array1------------------------------------------');
     setState(() {
       isLoading = false;
     });
@@ -412,7 +644,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Patient Summary"),
+        title: const Text("Carewell Clinical Dashboard"),
         centerTitle: true,
       ),
       body: _createBody(context),
@@ -431,11 +663,68 @@ class _MyHomePageState extends State<MyHomePage> {
         return chartData;
       }
 
+      List<PatientData1> getChartData1() {
+        print('finally eachPatientData_array: $eachPatientData_array1');
+        final List<PatientData1> chartData1 = [
+          for (var entry in eachPatientData_array1.entries)
+            PatientData1(entry.key, entry.value),
+        ];
+        return chartData1;
+      }
+
       setState(() {
         _chartData = getChartData();
+        _chartData1 = getChartData1();
         _tooltipBehavior = TooltipBehavior(enable: true);
       });
 
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: SfCartesianChart(
+              legend: Legend(isVisible: false),
+              tooltipBehavior: _tooltipBehavior,
+              series: <ChartSeries>[
+                BarSeries<PatientData, String>(
+                    name: 'Patient Data',
+                    dataSource: _chartData,
+                    xValueMapper: (PatientData gdp, _) => gdp.Screens,
+                    yValueMapper: (PatientData gdp, _) => gdp.time,
+                    dataLabelSettings: const DataLabelSettings(isVisible: true),
+                    enableTooltip: true)
+              ],
+              primaryXAxis: CategoryAxis(),
+              primaryYAxis: NumericAxis(
+                  edgeLabelPlacement: EdgeLabelPlacement.shift,
+                  numberFormat: NumberFormat.compact(),
+                  title: AxisTitle(text: 'Time spent(in Minutes)')),
+            ),
+          ),
+          Expanded(
+            child: SfCartesianChart(
+              legend: Legend(isVisible: false),
+              tooltipBehavior: _tooltipBehavior,
+              series: <ChartSeries>[
+                BarSeries<PatientData1, String>(
+                    name: 'Patient Data',
+                    dataSource: _chartData1,
+                    xValueMapper: (PatientData1 gdp, _) => gdp.Screens,
+                    yValueMapper: (PatientData1 gdp, _) => gdp.time,
+                    dataLabelSettings: const DataLabelSettings(isVisible: true),
+                    enableTooltip: true)
+              ],
+              primaryXAxis: CategoryAxis(),
+              primaryYAxis: NumericAxis(
+                  edgeLabelPlacement: EdgeLabelPlacement.shift,
+                  numberFormat: NumberFormat.compact(),
+                  title: AxisTitle(text: 'Time spent(in Minutes)')),
+            ),
+          ),
+        ],
+      );
+
+/*
       return Padding(
         padding: const EdgeInsets.all(8),
         child: SfCartesianChart(
@@ -457,18 +746,42 @@ class _MyHomePageState extends State<MyHomePage> {
               title: AxisTitle(text: 'Time spent(in Minutes)')),
         ),
       );
+         SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+
+                      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          CircularProgressIndicator(),
+          SizedBox(
+            height: 15,
+          ),
+          Text("Choose Patient ID")
+        ],
+      );
+
+
+*/
+
     } else {
       return const SizedBox(
-        width: 100,
-        height: 100,
-        child: CircularProgressIndicator(),
+        height: 2000,
+        width: 2000,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
   }
 
   Widget _buildControlWidgets() {
     return Container(
-      height: 200,
+      height: 220,
       color: Color.fromARGB(255, 203, 188, 188),
       child: ListView(
         children: [
@@ -487,11 +800,19 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           ElevatedButton(
             onPressed: () {
-              _loadCSV2();
+              _loadCSV();
             },
             child: Text("Load Patient Data"),
           ),
+          Divider(),
           if (isLoading == false) ...[
+            ElevatedButton(
+              onPressed: () {
+                _loadCSV2();
+              },
+              child: Text("Load Patient Data in an order"),
+            ),
+            Divider(),
             ListTile(
               title: const Text('Choose the desired screen:'),
               trailing: DropdownButton(
@@ -528,6 +849,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class PatientData {
   PatientData(this.Screens, this.time);
+  final String Screens;
+  final double time;
+}
+
+class PatientData1 {
+  PatientData1(this.Screens, this.time);
   final String Screens;
   final double time;
 }

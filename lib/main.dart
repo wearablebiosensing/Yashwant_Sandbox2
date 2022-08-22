@@ -13,6 +13,7 @@ import 'dart:async';
 import 'bar.dart';
 import 'bar2.dart';
 import 'bar3.dart';
+import 'bar4.dart';
 
 const _credentials = r'''
 {
@@ -76,16 +77,19 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: Builder(builder: (BuildContext context) {
-      return SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text("CSV Display"),
-          ),
-          body: _createBody(context),
-        ),
-      );
-    }));
+    return MaterialApp(
+        home: Builder(builder: (BuildContext context) {
+          return SafeArea(
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text("Carewell Clinical Dashboard"),
+                centerTitle: true,
+              ),
+              body: _createBody(context),
+            ),
+          );
+        }),
+        debugShowCheckedModeBanner: false);
   }
 
   Widget _createBody(BuildContext context) {
@@ -93,15 +97,15 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
       onPressed: () {
         _signIn();
       },
-      child: Text("Sing in"),
+      child: Text("Sign in"),
     );
     final signOut = ElevatedButton(
       onPressed: () {
         _signOut();
       },
-      child: Text("Sing out"),
+      child: Text("Sign out"),
     );
-
+/*
     final new_page = ElevatedButton(
       child: const Text('Time spent for one patients screen time'),
       onPressed: () {
@@ -110,7 +114,8 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
           MaterialPageRoute(builder: (context) => const FlBarChartExample()),
         );
       },
-    );
+    );*/
+
 /*    final new_page1 = ElevatedButton(
       child:
           const Text('Time spent for one particular screen time-- fl_charts '),
@@ -122,7 +127,7 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
       },
     );
 */
-    final new_page2 = ElevatedButton(
+/*    final new_page2 = ElevatedButton(
       child: const Text(
           'Time spent for one particular screen time---syncfusion_flutter_charts '),
       onPressed: () {
@@ -130,6 +135,18 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
           context,
           MaterialPageRoute(
               builder: (context) => const MyHomePage(
+                    title: 'example code',
+                  )),
+        );
+      },
+    );*/
+    final new_page3 = ElevatedButton(
+      child: const Text('Click here to begin '),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const MyHomePage1(
                     title: 'example code',
                   )),
         );
@@ -142,9 +159,10 @@ class _GoogleDriveTest extends State<GoogleDriveTest> {
         Center(child: signIn),
         Center(child: signOut),
         Divider(),
-        Center(child: new_page),
+        //      Center(child: new_page),
         //  Center(child: new_page1),
-        Center(child: new_page2),
+        //Center(child: new_page2),
+        Center(child: new_page3),
       ],
     );
   }
