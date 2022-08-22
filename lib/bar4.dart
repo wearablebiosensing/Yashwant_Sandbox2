@@ -130,15 +130,6 @@ class _MyHomePageState extends State<MyHomePage1> {
           uniqueLocation = OrgLocationFirstValue;
           // print('         org location does NOT contain https');
         }
-        /*
-        if (OrgLocationSecondValue.contains('https')) {
-          uniqueLocation = OrgLocationFirstValue;
-          // print('         org location contains https');
-        } else {
-          uniqueLocation = orgLocation;
-          // print('         org location does NOT contain https');
-        }
-        */
       } else {
         // print('         org location does NOT contain _');
         uniqueLocation = orgLocation;
@@ -148,15 +139,6 @@ class _MyHomePageState extends State<MyHomePage1> {
       if (uniqueLocationList.contains(uniqueLocation)) {
         // print('Duplicate location found');
       } else {
-        // print('unique location found');
-
-        // do not add the following list of locations to the unite locations list.
-        /*
-        1. application_closed
-        2. main_activity
-        3. CareWell
-        4. Media Player
-        */
         if (uniqueLocation.contains('application_closed') ||
             uniqueLocation.contains('main_activity') ||
             uniqueLocation.contains('CareWell') ||
@@ -169,7 +151,6 @@ class _MyHomePageState extends State<MyHomePage1> {
     }
     print('uniqueLocationList: $uniqueLocationList');
 
-    // for all patients, calculate the time spent on each location.
     List<Duration> timeSpentList = [];
     for (int i = 0; i < ST_data.length; i++) {
       int startTimestamp = int.parse(ST_data[i]);
@@ -182,9 +163,6 @@ class _MyHomePageState extends State<MyHomePage1> {
       timeSpentList.add(duration);
     }
 
-    // for each unique patient, and for each unique location, calculate the sum of time spent.
-    // List<List<dynamic>> finalPatientData = [];
-    // create 2D List which contains empty rows & column to hold the final patienty data.
     int uniquePIDCount = uniquePID.length;
     int uniqueLocationCount = uniqueLocationList.length;
     int finalRowsCount = uniquePIDCount * uniqueLocationCount;
@@ -266,10 +244,7 @@ class _MyHomePageState extends State<MyHomePage1> {
         eachPatientData.add('$location:$timeSpent');
 
         // convert the list into an array to display bar graph purpose
-        /*
-        var record = <String, double>{location: timeSpent};
-        eachPatientData_array.addEntries(record.entries);
-        */
+
       }
     } // end of FOR loop
     print(
@@ -371,15 +346,6 @@ class _MyHomePageState extends State<MyHomePage1> {
           uniqueLocation = OrgLocationFirstValue;
           // print('         org location does NOT contain https');
         }
-        /*
-        if (OrgLocationSecondValue.contains('https')) {
-          uniqueLocation = OrgLocationFirstValue;
-          // print('         org location contains https');
-        } else {
-          uniqueLocation = orgLocation;
-          // print('         org location does NOT contain https');
-        }
-        */
       } else {
         // print('         org location does NOT contain _');
         uniqueLocation = orgLocation;
@@ -391,13 +357,6 @@ class _MyHomePageState extends State<MyHomePage1> {
       } else {
         // print('unique location found');
 
-        // do not add the following list of locations to the unite locations list.
-        /*
-        1. application_closed
-        2. main_activity
-        3. CareWell
-        4. Media Player
-        */
         if (uniqueLocation.contains('application_closed') ||
             uniqueLocation.contains('main_activity') ||
             uniqueLocation.contains('CareWell') ||
@@ -423,9 +382,6 @@ class _MyHomePageState extends State<MyHomePage1> {
       timeSpentList.add(duration);
     }
 
-    // for each unique patient, and for each unique location, calculate the sum of time spent.
-    // List<List<dynamic>> finalPatientData = [];
-    // create 2D List which contains empty rows & column to hold the final patienty data.
     int uniquePIDCount = uniquePID.length;
     int uniqueLocationCount = uniqueLocationList.length;
     int finalRowsCount = uniquePIDCount * uniqueLocationCount;

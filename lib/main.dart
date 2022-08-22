@@ -10,9 +10,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:async';
-import 'bar.dart';
-import 'bar2.dart';
-import 'bar3.dart';
 import 'bar4.dart';
 
 const _credentials = r'''
